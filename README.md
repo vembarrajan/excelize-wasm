@@ -294,6 +294,73 @@ init('./node_modules/excelize-wasm/excelize.wasm.gz').then((excelize) => {
 });
 ```
 
+### Add pivot table to spreadsheet file
+<p align="center"><img width="650" src="https://raw.githubusercontent.com/vembarrajan/excelize-wasm/main/Pivot.png" alt="Create Pivot by excelize-wasm"></p>
+
+```javascript
+init('./node_modules/excelize-wasm/excelize.wasm.gz').then((excelize) => {
+  const f = new excelize.NewFile();
+  // Create some data in a sheet
+  const month = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  const year = [2017, 2018, 2019];
+  const types = ['Meat', 'Dairy', 'Beverages', 'Produce'];
+  const region = ['East', 'West', 'North', 'South'];
+
+  f.SetSheetRow('Sheet1', 'A1', ['Month', 'Year', 'Type', 'Sales', 'Region']);
+
+  for (let row = 2; row < 32; row++) {
+    f.SetCellValue('Sheet1', `A${row}`, month[Math.floor(Math.random() * 12)]);
+    f.SetCellValue('Sheet1', `B${row}`, year[Math.floor(Math.random() * 3)]);
+    f.SetCellValue('Sheet1', `C${row}`, types[Math.floor(Math.random() * 4)]);
+    f.SetCellValue('Sheet1', `D${row}`, Math.floor(Math.random() * 5000));
+    f.SetCellValue('Sheet1', `E${row}`, region[Math.floor(Math.random() * 4)]);
+  }
+
+  try {
+    f.AddPivotTable({
+      DataRange: 'Sheet1!A1:E31',
+      PivotTableRange: 'Sheet1!G2:M34',
+      Rows: [{ Data: 'Month', DefaultSubtotal: true }, { Data: 'Year' }],
+      Filter: [{ Data: 'Region' }],
+      Columns: [{ Data: 'Type', DefaultSubtotal: true }],
+      Data: [{ Data: 'Sales', Name: 'Summarize', Subtotal: 'Sum' }],
+      RowGrandTotals: true,
+      ColGrandTotals: true,
+      ShowDrill: true,
+      ShowRowHeaders: true,
+      ShowColHeaders: true,
+      ShowLastColumn: true,
+    });
+    const { buffer, error } = f.WriteToBuffer();
+    if (error) {
+      console.log(error);
+      return;
+    }
+    fs.writeFile('Book4.xlsx', buffer, 'binary', (error) => {
+      if (error) {
+        console.log(error);
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    return;
+  }
+});
+```
+
 ## Contributing
 
 Contributions are welcome! Open a pull request to fix a bug, or open an issue to discuss a new feature or change.
