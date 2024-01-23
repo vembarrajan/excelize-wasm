@@ -1,1 +1,36 @@
-<h1>hello world !!!</h1>
+<html lang="en">
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/excelize-wasm@0.0.4/index.min.js"></script>
+  </head>
+  <body>
+    <h1>Excelize WASM</h1>
+    <br/>
+    <h3>Reading Excel to JSON</h3>
+    <input type="file" id="convert-button" multiple />
+
+    <script type="module" lang="js">
+      document
+        .getElementById("convert-button")
+        .addEventListener("change", async function (e) {
+          var excelize = await excelizeWASM.init(
+            "https://cdn.jsdelivr.net/npm/excelize-wasm@0.0.4/excelize.wasm.gz"
+          );
+          let reader = new FileReader();
+          reader.onload = function () {
+            let byteArray = new Uint8Array(reader.result);
+            let f = excelize.OpenReader(byteArray);
+            console.log(f.GetSheetList());
+            const listOfSheets = (f.GetSheetList())?.list || [];
+            listOfSheets.forEach((sheetName) => {
+              const newParagraph = document.createElement('p');
+              const newBreakElement = document.createElement('br');
+              newParagraph.innerHTML = JSON.stringify(f.GetRows(sheetName));
+              document.body.appendChild(newParagraph);
+              document.body.appendChild(newBreakElement);
+            });
+          };
+          reader.readAsArrayBuffer(this.files[0]);
+        });
+    </script>
+  </body>
+</html>
